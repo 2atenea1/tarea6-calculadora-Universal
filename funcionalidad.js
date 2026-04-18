@@ -1,17 +1,12 @@
-/**
- * OMNI-CALCULADORA: Lógica Unificada para 5 Motores
- * Este script adapta las peticiones según el backend seleccionado.
- */
-
 // 1. Configuración de URLs Base
 const URLS_BASE = {
     java: "https://calculadora-java-kykd.onrender.com/api",
-    express: "https://tarea6-calculadora-node-js-express.onrender.com/api",
+    express: "https://tarea6-calculadora-node-js-express.onrender.com", // Sin /api
     fastapi: "https://tarea6-calculadora-pythonfastapi.onrender.com",
     php: "https://tarea6-calculadora-php.onrender.com"
 };
 
-// 2. Configuración para el Modo Agnóstico (12 Microservicios independientes)
+// 2. Configuración para el Modo Agnóstico
 const URLS_AGNOSTICO = {
     suma: {
         path: "https://calculadora-path-astrid.onrender.com/suma",
@@ -35,33 +30,23 @@ const URLS_AGNOSTICO = {
     }
 };
 
-/**
- * Función Principal de Ejecución
- * @param {string} metodo - 'PATH', 'QUERY' o 'BODY'
- * @param {string} operacion - 'suma', 'resta', 'multiplicacion' o 'division'
- */
+// --- FUNCIÓN PARA EJECUTAR OPERACIONES ---
 async function ejecutar(metodo, operacion) {
     const motor = document.getElementById('motor').value;
-    
-    // Soporte para diferentes IDs de inputs según tus versiones previas
-    const valA = document.getElementById('numA')?.value || document.getElementById('n1')?.value || 0;
-    const valB = document.getElementById('numB')?.value || document.getElementById('n2')?.value || 0;
-    const display = document.getElementById('display') || document.getElementById('resultado');
+    const valA = document.getElementById('numA').value || 0;
+    const valB = document.getElementById('numB').value || 0;
+    const display = document.getElementById('display');
     
     let url = "";
     let options = { method: 'GET' };
-    
     display.innerHTML = "<em>Procesando...</em>";
 
     try {
-        // --- CASO 1: MODO AGNÓSTICO ---
         if (motor === 'agnostico') {
             const endpoint = URLS_AGNOSTICO[operacion][metodo.toLowerCase()];
-            if (metodo === 'PATH') {
-                url = `${endpoint}/${valA}/${valB}`;
-            } else if (metodo === 'QUERY') {
-                url = `${endpoint}?n1=${valA}&n2=${valB}`;
-            } else {
+            if (metodo === 'PATH') url = `${endpoint}/${valA}/${valB}`;
+            else if (metodo === 'QUERY') url = `${endpoint}?n1=${valA}&n2=${valB}`;
+            else {
                 url = endpoint;
                 options = {
                     method: 'POST',
@@ -70,18 +55,15 @@ async function ejecutar(metodo, operacion) {
                 };
             }
         } 
-        
-        // --- CASO 2: PYTHON (FASTAPI) ---
-        else if (motor === 'fastapi') {
-            // Traducción de nombres de operación para Python
-            const opPy = operacion === 'multiplicacion' ? 'multi' : (operacion === 'division' ? 'divi' : operacion);
+        else if (motor === 'fastapi' || motor === 'express') {
+            // Ambos usan n1/n2 y rutas como /suma /resta /multi /divi
+            const baseUrl = URLS_BASE[motor];
+            const opCorta = operacion === 'multiplicacion' ? 'multi' : (operacion === 'division' ? 'divi' : operacion);
             
-            if (metodo === 'PATH') {
-                url = `${URLS_BASE.fastapi}/${opPy}/${valA}/${valB}`;
-            } else if (metodo === 'QUERY') {
-                url = `${URLS_BASE.fastapi}/${opPy}?n1=${valA}&n2=${valB}`;
-            } else {
-                url = `${URLS_BASE.fastapi}/${opPy}`;
+            if (metodo === 'PATH') url = `${baseUrl}/${opCorta}/${valA}/${valB}`;
+            else if (metodo === 'QUERY') url = `${baseUrl}/${opCorta}?n1=${valA}&n2=${valB}`;
+            else {
+                url = `${baseUrl}/${opCorta}`;
                 options = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -89,15 +71,11 @@ async function ejecutar(metodo, operacion) {
                 };
             }
         }
-
-        // --- CASO 3: PHP (PURO) ---
         else if (motor === 'php') {
-            if (metodo === 'PATH') {
-                url = `${URLS_BASE.php}/${operacion}/${valA}/${valB}`;
-            } else if (metodo === 'QUERY') {
-                url = `${URLS_BASE.php}?op=${operacion}&a=${valA}&b=${valB}`;
-            } else {
-                url = URLS_BASE.php; // index.php recibe el body
+            if (metodo === 'PATH') url = `${URLS_BASE.php}/${operacion}/${valA}/${valB}`;
+            else if (metodo === 'QUERY') url = `${URLS_BASE.php}?op=${operacion}&a=${valA}&b=${valB}`;
+            else {
+                url = URLS_BASE.php;
                 options = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -105,35 +83,10 @@ async function ejecutar(metodo, operacion) {
                 };
             }
         }
-
-        // --- CASO 4: EXPRESS (NODE.JS) ---
-       else if (motor === 'express') {
-    // 1. Quitamos el /api porque tus rutas de Express van directo (ej: /suma/6/2)
-    const baseUrl = "https://tarea6-calculadora-node-js-express.onrender.com";
-    
-    // 2. Traducción de nombres si es necesario (ej: multiplicacion -> multi)
-    const opEx = operacion === 'multiplicacion' ? 'multi' : (operacion === 'division' ? 'divi' : operacion);
-
-    if (metodo === 'PATH') {
-        url = `${baseUrl}/${opEx}/${valA}/${valB}`;
-    } else if (metodo === 'QUERY') {
-        url = `${baseUrl}/${opEx}?n1=${valA}&n2=${valB}`;
-    } else {
-        url = `${baseUrl}/${opEx}`;
-        options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ n1: valA, n2: valB })
-        };
-    }
-}
-        // --- CASO 5: JAVA (SPRING BOOT) - No se modifica su lógica original ---
-        else {
-            if (metodo === 'PATH') {
-                url = `${URLS_BASE.java}/${operacion}/path/${valA}/${valB}`;
-            } else if (metodo === 'QUERY') {
-                url = `${URLS_BASE.java}/${operacion}/query?a=${valA}&b=${valB}`;
-            } else {
+        else { // Java
+            if (metodo === 'PATH') url = `${URLS_BASE.java}/${operacion}/path/${valA}/${valB}`;
+            else if (metodo === 'QUERY') url = `${URLS_BASE.java}/${operacion}/query?a=${valA}&b=${valB}`;
+            else {
                 url = `${URLS_BASE.java}/${operacion}/body`;
                 options = {
                     method: 'POST',
@@ -143,20 +96,47 @@ async function ejecutar(metodo, operacion) {
             }
         }
 
-        // Ejecución de la petición
-        console.log(`Llamando a [${motor}]:`, url);
         const res = await fetch(url, options);
-        
-        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-        
+        if (!res.ok) throw new Error(`Error ${res.status}`);
         const data = await res.json();
-        
-        // Normalización de respuesta (soporta {resultado: X} o el número directo)
-        const finalResult = data.resultado !== undefined ? data.resultado : data;
-        display.innerHTML = `<strong>Resultado:</strong> ${finalResult}`;
+        const resultado = data.resultado !== undefined ? data.resultado : data;
+        display.innerHTML = `<strong>Resultado:</strong> ${resultado}`;
 
     } catch (err) {
         display.innerHTML = `<span style="color:red;">Error de conexión</span>`;
-        console.error("Error en la petición:", err);
+        console.error(err);
     }
 }
+
+// --- FUNCIÓN PARA CAMBIAR EL FONDO SEGÚN EL MOTOR ---
+function actualizarInterfaz() {
+    const motor = document.getElementById('motor').value;
+    const card = document.getElementById('main-card');
+    
+    const colores = {
+        java: '#f89820',      // Naranja
+        express: '#339933',   // Verde
+        fastapi: '#05998b',   // Teal
+        php: '#777bb4',       // Morado
+        agnostico: '#455a64'  // Gris
+    };
+
+    if (card) {
+        card.style.transition = "all 0.5s ease"; // Para que el cambio sea suave
+        card.style.backgroundColor = colores[motor];
+        
+        // Cambiamos el color de todo el texto a blanco para que resalte sobre el fondo
+        card.style.color = "white";
+
+        // Opcional: Ajustamos los inputs para que se sigan viendo blancos
+        const inputs = card.querySelectorAll('input');
+        inputs.forEach(inp => {
+            inp.style.backgroundColor = "white";
+            inp.style.color = "black";
+            inp.style.border = "none";
+        });
+    }
+}
+
+// Inicializar al cargar
+window.onload = actualizarInterfaz;
