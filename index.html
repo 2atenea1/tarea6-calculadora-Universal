@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Universal - Microservicios</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calculadora-card">
+        <h1>Calculadora Universal</h1>
+        
+        <div class="selector-servidor">
+            <label for="motor">Elige el motor (Backend):</label>
+            <select id="motor" onchange="cambiarEstilo()">
+                <option value="java">Java (Spring Boot)</option>
+                <option value="express">Node.js (Express)</option>
+                <option value="fastapi">Python (FastAPI)</option>
+                <option value="php">PHP</option>
+                <option value="agnostico">Agnóstico</option>
+            </select>
+        </div>
+
+        <div class="inputs-principales">
+            <input type="number" id="numA" value="0" placeholder="Número A">
+            <input type="number" id="numB" value="0" placeholder="Número B">
+        </div>
+
+        <div class="operaciones-grid">
+            <button class="btn op-btn" onclick="ejecutarOperacion('suma')">Sumar</button>
+            <button class="btn op-btn" onclick="ejecutarOperacion('resta')">Restar</button>
+            <button class="btn op-btn" onclick="ejecutarOperacion('multiplicacion')">Multiplicar</button>
+            <button class="btn op-btn" onclick="ejecutarOperacion('division')">Dividir</button>
+        </div>
+
+        <div class="pantalla-resultado" id="display">
+            Esperando operación...
+        </div>
+        
+        <div id="indicador-servidor" class="badge">Conectando...</div>
+    </div>
+
+    <script src="funcionalidad.js"></script>
+</body>
+</html>
