@@ -1,18 +1,6 @@
-/* Configuraciones Generales */
-:root {
-    --primary-color: #2c3e50;
-    --bg-color: #f4f7f6;
-    --card-bg: #ffffff;
-    --text-color: #333;
-    /* Colores para los métodos */
-    --path-color: #3498db;
-    --query-color: #2980b9;
-    --body-color: #1f618d;
-}
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f0f2f5;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,137 +8,62 @@ body {
     margin: 0;
 }
 
-/* Tarjeta Principal */
 .calculadora-card {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     width: 100%;
-    max-width: 450px;
-    transition: border-top 0.4s ease; /* Para la transición de colores de los motores */
-    border-top: 10px solid #ccc; 
-}
-
-h1 {
+    max-width: 380px;
+    transition: background-color 0.5s ease, color 0.5s ease;
     text-align: center;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
 }
 
-/* Selector de Motor */
-.selector-container {
-    margin-bottom: 1.5rem;
-}
+/* Modo oscuro para el texto cuando el fondo es intenso */
+.modo-oscuro { color: white !important; }
+.modo-oscuro h1, .modo-oscuro label, .modo-oscuro span { color: white !important; }
 
-.selector-container label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
+.selector-container { margin-bottom: 1rem; text-align: left; }
+.selector-container label { font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; display: block; }
 
-select {
+select, input {
     width: 100%;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #ddd;
-    background-color: #fff;
+    margin-bottom: 10px;
+    box-sizing: border-box;
     font-size: 1rem;
-    cursor: pointer;
 }
 
-/* Inputs de Números */
-.inputs-principales {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1.5rem;
-}
+.inputs-principales { display: flex; gap: 10px; }
 
-.inputs-principales input {
-    flex: 1;
-    padding: 12px;
-    border: 2px solid #eee;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    text-align: center;
-    transition: border-color 0.3s;
-}
+.fila-op { margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px; }
+.fila-op span { font-size: 0.7rem; font-weight: bold; color: #777; display: block; margin-bottom: 5px; }
 
-.inputs-principales input:focus {
-    border-color: var(--path-color);
-    outline: none;
-}
-
-/* Contenedor de Operaciones */
-.fila-op {
-    margin-bottom: 1rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.fila-op:last-child {
-    border-bottom: none;
-}
-
-.fila-op span {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #888;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-}
-
-.botones {
-    display: flex;
-    gap: 8px;
-}
-
-/* Botones de Estilo */
+.botones { display: flex; gap: 5px; }
 .btn {
     flex: 1;
     border: none;
-    padding: 10px;
-    border-radius: 6px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: transform 0.1s, opacity 0.2s;
-}
-
-.btn:active {
-    transform: scale(0.95);
-}
-
-.btn:hover {
-    opacity: 0.9;
-}
-
-.path { background-color: var(--path-color); }
-.query { background-color: var(--query-color); }
-.body { background-color: var(--body-color); }
-
-/* Pantalla de Resultado */
-.pantalla-resultado {
-    margin-top: 1.5rem;
-    background-color: #f8f9fa;
-    padding: 15px;
+    padding: 8px;
     border-radius: 8px;
-    text-align: center;
+    color: white;
+    cursor: pointer;
     font-weight: bold;
-    font-size: 1.1rem;
-    color: var(--primary-color);
-    border: 1px dashed #ccc;
+    font-size: 0.8rem;
+    background-color: rgba(0,0,0,0.3); /* Botones que se adaptan al fondo */
+    transition: background 0.2s;
+}
+.btn:hover { background-color: rgba(0,0,0,0.5); }
+
+.pantalla-resultado {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.25);
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: 1px solid rgba(0,0,0,0.1);
 }
 
-/* Barra de Estado (Debug) */
-#status-url {
-    font-family: monospace;
-    background: #fffbe6;
-    padding: 5px;
-    border-radius: 4px;
-    border: 1px solid #ffe58f;
-}
+#status-url { font-size: 9px; margin-top: 10px; opacity: 0.6; word-break: break-all; }
