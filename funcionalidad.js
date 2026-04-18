@@ -1,111 +1,162 @@
-// 1. Enlaces para los motores que tienen todo en un mismo servicio
-const MOTORES_UNIFICADOS = {
+/**
+ * OMNI-CALCULADORA: Lógica Unificada para 5 Motores
+ * Este script adapta las peticiones según el backend seleccionado.
+ */
+
+// 1. Configuración de URLs Base
+const URLS_BASE = {
     java: "https://calculadora-java-kykd.onrender.com/api",
     express: "https://tarea6-calculadora-node-js-express.onrender.com/api",
-    fastapi: "https://tarea6-calculadora-pythonfastapi.onrender.com/api",
-    php: "https://tarea6-calculadora-php.onrender.com/api"
+    fastapi: "https://tarea6-calculadora-pythonfastapi.onrender.com",
+    php: "https://tarea6-calculadora-php.onrender.com"
 };
 
-// 2. Enlaces específicos para el modo Agnóstico (Fragmentado)
-const MICROSERVICIOS_NODE = {
+// 2. Configuración para el Modo Agnóstico (12 Microservicios independientes)
+const URLS_AGNOSTICO = {
     suma: {
-        path: "https://calculadora-path-astrid.onrender.com",
-        query: "https://calculadora-query-astrid.onrender.com",
-        body: "https://calculadora-body-astrid.onrender.com"
+        path: "https://calculadora-path-astrid.onrender.com/suma",
+        query: "https://calculadora-query-astrid.onrender.com/suma",
+        body: "https://calculadora-body-astrid.onrender.com/suma"
     },
     resta: {
-        path: "https://tarea6-microserviciossuma.onrender.com",
-        query: "https://calculadora-resta-query.onrender.com",
-        body: "https://calculadora-resta-body.onrender.com"
+        path: "https://tarea6-microserviciossuma.onrender.com/resta",
+        query: "https://calculadora-resta-query.onrender.com/resta",
+        body: "https://calculadora-resta-body.onrender.com/resta"
     },
     multiplicacion: {
-        path: "https://calculadora-multi-path.onrender.com",
-        query: "https://calculadora-multi-query.onrender.com",
-        body: "https://calculadora-multi-body.onrender.com"
+        path: "https://calculadora-multi-path.onrender.com/multi",
+        query: "https://calculadora-multi-query.onrender.com/multi",
+        body: "https://calculadora-multi-body.onrender.com/multi"
     },
     division: {
-        path: "https://calculadora-divi-path.onrender.com",
-        query: "https://calculadora-divi-query.onrender.com",
-        body: "https://calculadora-divi-body.onrender.com"
+        path: "https://calculadora-divi-path.onrender.com/divi",
+        query: "https://calculadora-divi-query.onrender.com/divi",
+        body: "https://calculadora-divi-body.onrender.com/divi"
     }
 };
 
-function ejecutar(metodo, operacion) {
+/**
+ * Función Principal de Ejecución
+ * @param {string} metodo - 'PATH', 'QUERY' o 'BODY'
+ * @param {string} operacion - 'suma', 'resta', 'multiplicacion' o 'division'
+ */
+async function ejecutar(metodo, operacion) {
     const motor = document.getElementById('motor').value;
-    const a = document.getElementById('numA').value || 0;
-    const b = document.getElementById('numB').value || 0;
-    const display = document.getElementById('display');
-    const status = document.getElementById('status-url');
-
+    
+    // Soporte para diferentes IDs de inputs según tus versiones previas
+    const valA = document.getElementById('numA')?.value || document.getElementById('n1')?.value || 0;
+    const valB = document.getElementById('numB')?.value || document.getElementById('n2')?.value || 0;
+    const display = document.getElementById('display') || document.getElementById('resultado');
+    
     let url = "";
     let options = { method: 'GET' };
-    display.innerText = "Calculando...";
-
-    // Lógica de construcción de URL
-    if (motor === 'agnostico') {
-        const base = MICROSERVICIOS_NODE[operacion][metodo.toLowerCase()];
-        if (metodo === 'PATH') url = `${base}/${a}/${b}`;
-        else if (metodo === 'QUERY') url = `${base}/?a=${a}&b=${b}`;
-        else { // BODY (POST)
-            url = `${base}/`;
-            options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ a: parseFloat(a), b: parseFloat(b) })
-            };
-        }
-    } else {
-        const base = MOTORES_UNIFICADOS[motor];
-        if (metodo === 'PATH') url = `${base}/${operacion}/path/${a}/${b}`;
-        else if (metodo === 'QUERY') url = `${base}/${operacion}/query?a=${a}&b=${b}`;
-        else { // BODY (POST)
-            url = `${base}/${operacion}/body`;
-            options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ a: parseFloat(a), b: parseFloat(b) })
-            };
-        }
-    }
-
-    status.innerText = "URL: " + url;
-
-    fetch(url, options)
-        .then(res => {
-            if (!res.ok) throw new Error("Error en la respuesta");
-            return res.json();
-        })
-        .then(data => {
-            display.innerText = "Resultado: " + data.resultado;
-        })
-        .catch(err => {
-            console.error(err);
-            display.innerText = "Error de conexión";
-        });
-}
-
-function actualizarInterfaz() {
-    const motor = document.getElementById('motor').value;
-    const card = document.getElementById('main-card');
     
-    // Colores temáticos para cada motor
-    const colores = {
-        java: '#f89820',      // Naranja Java
-        express: '#68a063',   // Verde Node
-        fastapi: '#05998b',   // Teal FastAPI
-        php: '#777bb4',       // Violeta PHP
-        agnostico: '#ffffff'  // Blanco para Agnóstico
-    };
+    display.innerHTML = "<em>Procesando...</em>";
 
-    card.style.backgroundColor = colores[motor];
+    try {
+        // --- CASO 1: MODO AGNÓSTICO ---
+        if (motor === 'agnostico') {
+            const endpoint = URLS_AGNOSTICO[operacion][metodo.toLowerCase()];
+            if (metodo === 'PATH') {
+                url = `${endpoint}/${valA}/${valB}`;
+            } else if (metodo === 'QUERY') {
+                url = `${endpoint}?n1=${valA}&n2=${valB}`;
+            } else {
+                url = endpoint;
+                options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ n1: valA, n2: valB })
+                };
+            }
+        } 
+        
+        // --- CASO 2: PYTHON (FASTAPI) ---
+        else if (motor === 'fastapi') {
+            // Traducción de nombres de operación para Python
+            const opPy = operacion === 'multiplicacion' ? 'multi' : (operacion === 'division' ? 'divi' : operacion);
+            
+            if (metodo === 'PATH') {
+                url = `${URLS_BASE.fastapi}/${opPy}/${valA}/${valB}`;
+            } else if (metodo === 'QUERY') {
+                url = `${URLS_BASE.fastapi}/${opPy}?n1=${valA}&n2=${valB}`;
+            } else {
+                url = `${URLS_BASE.fastapi}/${opPy}`;
+                options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ n1: parseFloat(valA), n2: parseFloat(valB) })
+                };
+            }
+        }
 
-    // Ajustamos el color del texto para que siempre sea legible
-    if (motor === 'agnostico') {
-        card.classList.remove('modo-oscuro');
+        // --- CASO 3: PHP (PURO) ---
+        else if (motor === 'php') {
+            if (metodo === 'PATH') {
+                url = `${URLS_BASE.php}/${operacion}/${valA}/${valB}`;
+            } else if (metodo === 'QUERY') {
+                url = `${URLS_BASE.php}?op=${operacion}&a=${valA}&b=${valB}`;
+            } else {
+                url = URLS_BASE.php; // index.php recibe el body
+                options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ op: operacion, a: parseFloat(valA), b: parseFloat(valB) })
+                };
+            }
+        }
+
+        // --- CASO 4: EXPRESS (NODE.JS) ---
+       else if (motor === 'express') {
+    // 1. Quitamos el /api porque tus rutas de Express van directo (ej: /suma/6/2)
+    const baseUrl = "https://tarea6-calculadora-node-js-express.onrender.com";
+    
+    // 2. Traducción de nombres si es necesario (ej: multiplicacion -> multi)
+    const opEx = operacion === 'multiplicacion' ? 'multi' : (operacion === 'division' ? 'divi' : operacion);
+
+    if (metodo === 'PATH') {
+        url = `${baseUrl}/${opEx}/${valA}/${valB}`;
+    } else if (metodo === 'QUERY') {
+        url = `${baseUrl}/${opEx}?n1=${valA}&n2=${valB}`;
     } else {
-        card.classList.add('modo-oscuro');
+        url = `${baseUrl}/${opEx}`;
+        options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ n1: valA, n2: valB })
+        };
     }
 }
+        // --- CASO 5: JAVA (SPRING BOOT) - No se modifica su lógica original ---
+        else {
+            if (metodo === 'PATH') {
+                url = `${URLS_BASE.java}/${operacion}/path/${valA}/${valB}`;
+            } else if (metodo === 'QUERY') {
+                url = `${URLS_BASE.java}/${operacion}/query?a=${valA}&b=${valB}`;
+            } else {
+                url = `${URLS_BASE.java}/${operacion}/body`;
+                options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ a: parseFloat(valA), b: parseFloat(valB) })
+                };
+            }
+        }
 
-// Iniciar con el color de Java por defecto
-actualizarInterfaz();
+        // Ejecución de la petición
+        console.log(`Llamando a [${motor}]:`, url);
+        const res = await fetch(url, options);
+        
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        
+        const data = await res.json();
+        
+        // Normalización de respuesta (soporta {resultado: X} o el número directo)
+        const finalResult = data.resultado !== undefined ? data.resultado : data;
+        display.innerHTML = `<strong>Resultado:</strong> ${finalResult}`;
+
+    } catch (err) {
+        display.innerHTML = `<span style="color:red;">Error de conexión</span>`;
+        console.error("Error en la petición:", err);
+    }
+}
