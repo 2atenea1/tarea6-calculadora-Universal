@@ -3,41 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Universal - Microservicios</title>
+    <title>Calculadora Universal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="calculadora-card">
-        <h1>Calculadora Universal</h1>
+    <div class="calculadora-card" id="main-card">
+        <h1>Calculadora Multi-Motor</h1>
         
-        <div class="selector-servidor">
-            <label for="motor">Elige el motor (Backend):</label>
-            <select id="motor" onchange="cambiarEstilo()">
+        <div class="selector-container">
+            <label>Selecciona el Backend:</label>
+            <select id="motor" onchange="actualizarInterfaz()">
                 <option value="java">Java (Spring Boot)</option>
                 <option value="express">Node.js (Express)</option>
                 <option value="fastapi">Python (FastAPI)</option>
                 <option value="php">PHP</option>
-                <option value="agnostico">Agnóstico</option>
+                <option value="agnostico"> Agnóstico </option>
             </select>
         </div>
 
         <div class="inputs-principales">
-            <input type="number" id="numA" value="0" placeholder="Número A">
-            <input type="number" id="numB" value="0" placeholder="Número B">
+            <input type="number" id="numA" value="0">
+            <input type="number" id="numB" value="0">
         </div>
 
-        <div class="operaciones-grid">
-            <button class="btn op-btn" onclick="ejecutarOperacion('suma')">Sumar</button>
-            <button class="btn op-btn" onclick="ejecutarOperacion('resta')">Restar</button>
-            <button class="btn op-btn" onclick="ejecutarOperacion('multiplicacion')">Multiplicar</button>
-            <button class="btn op-btn" onclick="ejecutarOperacion('division')">Dividir</button>
+        <div class="operaciones-container">
+            <div class="fila-op">
+                <span>SUMA</span>
+                <div class="botones">
+                    <button class="btn path" onclick="ejecutar('PATH', 'suma')">Path</button>
+                    <button class="btn query" onclick="ejecutar('QUERY', 'suma')">Query</button>
+                    <button class="btn body" onclick="ejecutar('BODY', 'suma')">Body</button>
+                </div>
+            </div>
+            <div class="fila-op">
+                <span>RESTA</span>
+                <div class="botones">
+                    <button class="btn path" onclick="ejecutar('PATH', 'resta')">Path</button>
+                    <button class="btn query" onclick="ejecutar('QUERY', 'resta')">Query</button>
+                    <button class="btn body" onclick="ejecutar('BODY', 'resta')">Body</button>
+                </div>
+            </div>
+            <div class="fila-op">
+                <span>MULTIPLICACIÓN</span>
+                <div class="botones">
+                    <button class="btn path" onclick="ejecutar('PATH', 'multiplicacion')">Path</button>
+                    <button class="btn query" onclick="ejecutar('QUERY', 'multiplicacion')">Query</button>
+                    <button class="btn body" onclick="ejecutar('BODY', 'multiplicacion')">Body</button>
+                </div>
+            </div>
+            <div class="fila-op">
+                <span>DIVISIÓN</span>
+                <div class="botones">
+                    <button class="btn path" onclick="ejecutar('PATH', 'division')">Path</button>
+                    <button class="btn query" onclick="ejecutar('QUERY', 'division')">Query</button>
+                    <button class="btn body" onclick="ejecutar('BODY', 'division')">Body</button>
+                </div>
+            </div>
         </div>
 
         <div class="pantalla-resultado" id="display">
             Esperando operación...
         </div>
-        
-        <div id="indicador-servidor" class="badge">Conectando...</div>
+        <div id="status-url" style="font-size: 9px; color: #888; margin-top: 10px; word-break: break-all;"></div>
     </div>
 
     <script src="funcionalidad.js"></script>

@@ -1,59 +1,115 @@
-// EL DICCIONARIO DE TUS MICROSERVICIOS
-const SERVIDORES = {
-    java: "https://calculadora-java-kykd.onrender.com",
-    express: "https://tarea6-calculadora-node-js-express.onrender.com",    
-    fastapi: "https://tarea6-calculadora-pythonfastapi.onrender.com", 
-    php: "https://tarea6-calculadora-php.onrender.com",      
-    agnostico: ""             
+// 1. MOTORES UNIFICADOS (Una sola URL base para todas las operaciones)
+const MOTORES_UNIFICADOS = {
+    java: "https://calculadora-java-kykd.onrender.com/api",
+    express: "https://tarea6-calculadora-node-js-express.onrender.com/api",
+    fastapi: "https://tarea6-calculadora-pythonfastapi.onrender.com/api",
+    php: "https://tarea6-calculadora-php.onrender.com/api"
 };
 
-// Función decorativa para que la pantalla cambie según el servidor
-function cambiarEstilo() {
-    const motor = document.getElementById('motor').value;
-    const indicador = document.getElementById('indicador-servidor');
-    
-    indicador.innerText = "Modo activo: " + motor.toUpperCase();
-    
-    // Opcional: Cambiar colores según el lenguaje
-    const colores = {
-        java: "#ff8411",
-        express: "#60ff52",
-        fastapi: "#12aa9b",
-        php: "#97a2d1",
-        agnostico: "#5ec1f3"
-    };
-    indicador.style.backgroundColor = colores[motor];
-}
+// 2. MOTOR AGNÓSTICO (Cada operación y método es un enlace distinto en Render)
+const MICROSERVICIOS_NODE = {
+    suma: {
+        path: "https://calculadora-path-astrid.onrender.com",
+        query: "https://calculadora-query-astrid.onrender.com",
+        body: "https://calculadora-body-astrid.onrender.com"
+    },
+    resta: {
+        path: "https://tarea6-microserviciossuma.onrender.com",
+        query: "https://calculadora-resta-query.onrender.com",
+        body: "https://calculadora-resta-body.onrender.com"
+    },
+    multiplicacion: {
+        path: "https://calculadora-multi-path.onrender.com",
+        query: "https://calculadora-multi-query.onrender.com",
+        body: "https://calculadora-multi-body.onrender.com"
+    },
+    division: {
+        path: "https://calculadora-divi-path.onrender.com",
+        query: "https://calculadora-divi-query.onrender.com",
+        body: "https://calculadora-divi-body.onrender.com"
+    }
+};
 
-// Inicializar el color al cargar la página
-cambiarEstilo();
+function ejecutar(metodo, operacion) {
+    const motorActivo = document.getElementById('motor').value;
+    const numA = document.getElementById('numA').value;
+    const numB = document.getElementById('numB').value;
+    const display = document.getElementById('display');
+    const statusUrl = document.getElementById('status-url');
 
-// LA FUNCIÓN UNIVERSAL
-function ejecutarOperacion(operacion) {
-    const motorSeleccionado = document.getElementById('motor').value;
-    const baseUrl = SERVIDORES[motorSeleccionado];
-    
-    const a = document.getElementById('numA').value;
-    const b = document.getElementById('numB').value;
+    let urlFinal = "";
+    let configuracion = { method: 'GET' };
 
-    // Construimos la URL asumiendo que todos tus backends usan la estructura /operacion/path/a/b
-    // (Ejemplo: /suma/path/4/5)
-    let url = `${baseUrl}/${operacion}/path/${a}/${b}`;
-    
-    console.log(`Llamando al servidor ${motorSeleccionado.toUpperCase()} en:`, url);
-    document.getElementById('display').innerText = "Calculando...";
+    display.innerText = "Procesando...";
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en el servidor: " + response.status);
-            return response.json();
+    // Lógica para el modo Agnóstico (Microservicios independientes)
+    if (motorActivo === 'agnostico') {
+        const baseMicro = MICROSERVICIOS_NODE[operacion][metodo.toLowerCase()];
+        
+        if (metodo === 'PATH') {
+            urlFinal = `${baseMicro}/${numA}/${numB}`;
+        } else if (metodo === 'QUERY') {
+            urlFinal = `${baseMicro}/?a=${numA}&b=${numB}`;
+        } else if (metodo === 'BODY') {
+            urlFinal = `${baseMicro}/`;
+            configuracion = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ a: parseFloat(numA), b: parseFloat(numB) })
+            };
+        }
+    } 
+    // Lógica para los otros 4 motores unificados
+    else {
+        const baseUnificada = MOTORES_UNIFICADOS[motorActivo];
+        
+        if (metodo === 'PATH') {
+            urlFinal = `${baseUnificada}/${operacion}/path/${numA}/${numB}`;
+        } else if (metodo === 'QUERY') {
+            urlFinal = `${baseUnificada}/${operacion}/query?a=${numA}&b=${numB}`;
+        } else if (metodo === 'BODY') {
+            urlFinal = `${baseUnificada}/${operacion}/body`;
+            configuracion = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ a: parseFloat(numA), b: parseFloat(numB) })
+            };
+        }
+    }
+
+    statusUrl.innerText = "URL: " + urlFinal;
+
+    // Realizar la petición fetch
+    fetch(urlFinal, configuracion)
+        .then(res => {
+            if (!res.ok) throw new Error("Error " + res.status);
+            return res.json();
         })
         .then(data => {
-            // Asumimos que todos los backends devuelven el JSON en el formato {"resultado": X}
-            document.getElementById('display').innerText = "Resultado: " + data.resultado;
+            // Se asume que todos retornan {"resultado": valor}
+            display.innerText = "Resultado: " + data.resultado;
         })
-        .catch(error => {
-            console.error("Error:", error);
-            document.getElementById('display').innerText = `Error al conectar con ${motorSeleccionado}`;
+        .catch(err => {
+            console.error("Fallo:", err);
+            display.innerText = "Error de conexión";
         });
 }
+
+function actualizarInterfaz() {
+    const motor = document.getElementById('motor').value;
+    const card = document.getElementById('main-card');
+    
+    // Colores temáticos por motor
+    const temas = {
+        java: '#ff8c00',      // Naranja Java
+        express: '#15ff00',   // Verde Node
+        fastapi: '#00ffe5',   // Teal FastAPI
+        php: '#696da8',       // Violeta PHP
+        agnostico: '#4b4848'  // Gris oscuro
+    };
+    
+    card.style.borderTop = `10px solid ${temas[motor]}`;
+}
+
+// Ejecutar al cargar para poner el color inicial
+actualizarInterfaz();
